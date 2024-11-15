@@ -13,7 +13,7 @@ app.get('/historicoIPCA/calculo', (req, res) => {
   const mesFinal = parseInt(req.query.mesFinal);
   const anoFinal = parseInt(req.query.anoFinal);
 
-  // Validação de parâmetros
+
   if (
     isNaN(valorInicial) || isNaN(mesInicial) || isNaN(anoInicial) ||
     isNaN(mesFinal) || isNaN(anoFinal) ||
@@ -23,7 +23,6 @@ app.get('/historicoIPCA/calculo', (req, res) => {
     return res.status(400).json({ error: 'Parâmetros inválidos ou fora do intervalo permitido.' });
   }
 
-  // Filtragem dos dados no período solicitado
   const periodo = historicoInflacao.filter(dado => {
     return (
       (dado.ano > anoInicial || (dado.ano === anoInicial && dado.mes >= mesInicial)) &&
@@ -35,7 +34,6 @@ app.get('/historicoIPCA/calculo', (req, res) => {
     return res.status(404).json({ error: 'Nenhum dado encontrado para o período especificado.' });
   }
 
-  // Cálculo do valor ajustado
   let valorReajustado = valorInicial;
   periodo.forEach(dado => {
     valorReajustado *= (1 + dado.ipca / 100);
