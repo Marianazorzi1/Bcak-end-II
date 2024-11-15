@@ -4,9 +4,8 @@ import historicoInflacao from './dados/dados.js';
 const app = express();
 const port = 8080;
 
-
 app.get('/historicoIPCA/calculo', (req, res) => {
-  console.log('Rota de cálculo chamada com parâmetros:', req.query); 
+  console.log('Rota de cálculo chamada com parâmetros:', req.query);
 
   const valorInicial = parseFloat(req.query.valor);
   const mesInicial = parseInt(req.query.mesInicial);
@@ -14,15 +13,17 @@ app.get('/historicoIPCA/calculo', (req, res) => {
   const mesFinal = parseInt(req.query.mesFinal);
   const anoFinal = parseInt(req.query.anoFinal);
 
-
+  // Validação de parâmetros
   if (
     isNaN(valorInicial) || isNaN(mesInicial) || isNaN(anoInicial) ||
-    isNaN(mesFinal) || isNaN(anoFinal)
+    isNaN(mesFinal) || isNaN(anoFinal) ||
+    mesInicial < 1 || mesInicial > 12 || mesFinal < 1 || mesFinal > 12 ||
+    anoInicial > anoFinal || anoFinal > 2024
   ) {
-    return res.status(400).json({ error: 'Parâmetros inválidos.' });
+    return res.status(400).json({ error: 'Parâmetros inválidos ou fora do intervalo permitido.' });
   }
 
-
+  // Filtragem dos dados no período solicitado
   const periodo = historicoInflacao.filter(dado => {
     return (
       (dado.ano > anoInicial || (dado.ano === anoInicial && dado.mes >= mesInicial)) &&
@@ -30,11 +31,11 @@ app.get('/historicoIPCA/calculo', (req, res) => {
     );
   });
 
-
   if (periodo.length === 0) {
     return res.status(404).json({ error: 'Nenhum dado encontrado para o período especificado.' });
   }
 
+  // Cálculo do valor ajustado
   let valorReajustado = valorInicial;
   periodo.forEach(dado => {
     valorReajustado *= (1 + dado.ipca / 100);
@@ -46,22 +47,21 @@ app.get('/historicoIPCA/calculo', (req, res) => {
   });
 });
 
-
 app.get('/historicoIPCA', (req, res) => {
   const ano = parseInt(req.query.ano);
+
   if (!isNaN(ano)) {
     const dadosAno = historicoInflacao.filter(dado => dado.ano === ano);
     return dadosAno.length > 0
       ? res.json(dadosAno)
       : res.status(404).json({ error: 'Nenhum dado encontrado para o ano especificado.' });
   }
+
   res.json(historicoInflacao);
 });
 
-
 app.get('/historicoIPCA/:id', (req, res) => {
   const id = parseInt(req.params.id);
-
 
   if (isNaN(id)) {
     return res.status(400).json({ error: 'ID inválido.' });
@@ -69,12 +69,10 @@ app.get('/historicoIPCA/:id', (req, res) => {
 
   const resultado = historicoInflacao.find(dado => dado.id === id);
 
-
   return resultado
     ? res.json(resultado)
     : res.status(404).json({ error: 'Elemento não encontrado.' });
 });
-
 
 app.listen(port, () => {
   console.log(`API rodando na porta ${port}`);
