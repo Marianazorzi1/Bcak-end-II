@@ -18,7 +18,8 @@ app.get('/historicoIPCA/calculo', (req, res) => {
     isNaN(valorInicial) || isNaN(mesInicial) || isNaN(anoInicial) ||
     isNaN(mesFinal) || isNaN(anoFinal) ||
     mesInicial < 1 || mesInicial > 12 || mesFinal < 1 || mesFinal > 12 ||
-    anoInicial > anoFinal || anoFinal > 2024
+    anoInicial > anoFinal || anoFinal > 2024||
+    anoFinal > anoFinal || anoInicial < 2015
   ) {
     return res.status(400).json({ error: 'Parâmetros inválidos ou fora do intervalo permitido.' });
   }
